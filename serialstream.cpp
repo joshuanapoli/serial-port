@@ -1,9 +1,10 @@
 /*
  * Author: Terraneo Federico
+ *         Joshua Napoli
  * Distributed under the Boost Software License, Version 1.0.
  *
- * v1.01:  Fixed a bug regarding reading after a timeout.
- *
+ * v1.02: Integrate std::chrono.
+ * v1.01: Fixed a bug regarding reading after a timeout.
  * v1.00: First release.
  */
 
@@ -46,8 +47,8 @@ public:
     
     io_service io; ///< Io service object
     serial_port port; ///< Serial port object
-    deadline_timer timer; ///< Timer for timeout
-    posix_time::time_duration timeout; ///< Read/write timeout
+    basic_waitable_timer<SerialDeviceClock> timer; ///< Timer for timeout
+    SerialDeviceClock::duration timeout; ///< Read/write timeout
     enum ReadResult result;  ///< Used by read with timeout
     streamsize bytesTransferred; ///< Used by async read callback
     char *readBuffer; ///< Used to hold read data
@@ -62,7 +63,7 @@ SerialDeviceImpl::SerialDeviceImpl(const SerialOptions& options)
     try {
         //For this code to work, there should always be a timeout, so the
         //request for no timeout is translated into a very long timeout
-        if(timeout==posix_time::seconds(0)) timeout=posix_time::hours(100000);
+        if(timeout==std::chrono::seconds(0)) timeout=std::chrono::hours(100000);
 
         port.open(options.getDevice());//Port must be open before setting option
 
@@ -132,12 +133,25 @@ SerialDevice::SerialDevice(const SerialOptions& options)
 
 streamsize SerialDevice::read(char *s, streamsize n)
 {
+    streamsize bytesTransferred{read(s, n, pImpl->timeout + SerialDeviceClock::now())};
+    if(pImpl->result == resultTimeout)
+    {
+      throw(TimeoutException("Timeout expired"));
+    }
+    else
+    {
+      return bytesTransferred;
+    }
+}
+
+streamsize SerialDevice::read(char *s, streamsize n, time_point deadline )
+{
     pImpl->result=resultInProgress;
     pImpl->bytesTransferred=0;
     pImpl->readBuffer=s;
     pImpl->readBufferSize=n;
 
-    pImpl->timer.expires_from_now(pImpl->timeout);
+    pImpl->timer.expires_at(deadline);
     pImpl->timer.async_wait(boost::bind(&SerialDevice::timeoutExpired,this,
             boost::asio::placeholders::error));
     
@@ -154,7 +168,7 @@ streamsize SerialDevice::read(char *s, streamsize n)
                 return pImpl->bytesTransferred;
             case resultTimeout:
                 pImpl->port.cancel();
-                throw(TimeoutException("Timeout expired"));
+                return pImpl->bytesTransferred;
             case resultError:
                 pImpl->port.cancel();
                 pImpl->timer.cancel();

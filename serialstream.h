@@ -1,5 +1,6 @@
 /*
  * Author: Terraneo Federico
+ *         Joshua Napoli
  * Distributed under the Boost Software License, Version 1.0.
  */
 
@@ -10,9 +11,12 @@
 #include <boost/iostreams/stream.hpp>
 #include <boost/iostreams/categories.hpp>
 #include <boost/date_time/posix_time/posix_time_duration.hpp>
+#include <chrono>
 
 #ifndef SERIALSTREAM_H
 #define	SERIALSTREAM_H
+
+typedef std::chrono::high_resolution_clock SerialDeviceClock;
 
 /**
  * Thrown if timeout occurs
@@ -28,8 +32,8 @@ public:
  */
 class SerialOptions
 {
-    typedef boost::posix_time::time_duration time_duration;
-    typedef boost::posix_time::seconds seconds;
+    typedef SerialDeviceClock::duration time_duration;
+    typedef std::chrono::seconds seconds;
     
 public:
     ///Possible flow controls.
@@ -129,6 +133,7 @@ class SerialDevice
 public:
     typedef char char_type;
     typedef boost::iostreams::bidirectional_device_tag category;
+    typedef SerialDeviceClock::time_point time_point;
 
     /**
      * \internal
@@ -152,6 +157,19 @@ public:
      * \return number of character read
      */
     std::streamsize read(char *s, std::streamsize n);
+
+    /**
+     * \internal
+     * Read from serial port. Timeout does not result in an exception.
+     * \throws ios_base::failure if there are
+     * errors with the serial port.
+     * Use the clear() member function to go on reading after an exception was
+     * thrown.
+     * \param s where to store read characters
+     * \param n max number of characters to read
+     * \return number of character read
+     */
+    std::streamsize read(char *s, std::streamsize n, time_point deadline );
 
     /**
      * \internal
