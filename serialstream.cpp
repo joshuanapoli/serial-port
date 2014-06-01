@@ -133,7 +133,7 @@ SerialDevice::SerialDevice(const SerialOptions& options)
 
 streamsize SerialDevice::read(char *s, streamsize n)
 {
-    streamsize bytesTransferred{read(s, n, pImpl->timeout + SerialDeviceClock::now())};
+    auto bytesTransferred = read(s, n, pImpl->timeout + SerialDeviceClock::now());
     if(pImpl->result == resultTimeout)
     {
       throw(TimeoutException("Timeout expired"));

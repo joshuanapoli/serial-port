@@ -1,0 +1,42 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!-- @file Default.targets -->
+<!-- @brief Guess default directories if explicit configuration is not given. -->
+<!-- @author Joshua Napoli <jnapoli@alum.mit.edu> -->
+
+<Project xmlns="http://schemas.microsoft.com/developer/msbuild/2003">
+  <PropertyGroup>    
+    <SerialStreamDirectory Condition="'$(SerialStreamDirectory)'==''">$(MSBuildThisFileDirectory)..</SerialStreamDirectory>
+    <SerialStreamIncludeDirectory Condition="'$(SerialStreamIncludeDirectory)'==''">$(SerialStreamDirectory)</SerialStreamIncludeDirectory>
+
+    <PlatformToolset Condition="'$(PlatformToolset)'==''">v110</PlatformToolset>
+  </PropertyGroup>
+
+  <PropertyGroup Condition="'$(UseDebugLibraries)'==''">
+    <UseDebugLibraries Condition="'$(Configuration)'=='Debug'">true</UseDebugLibraries>
+    <UseDebugLibraries Condition="'$(Configuration)'=='Release'">false</UseDebugLibraries>
+  </PropertyGroup>
+
+  <PropertyGroup Condition="'$(WholeProgramOptimization)'==''">
+    <WholeProgramOptimization Condition="'$(Configuration)'=='Debug'">false</WholeProgramOptimization>
+    <WholeProgramOptimization Condition="'$(Configuration)'=='Release'">true</WholeProgramOptimization>
+  </PropertyGroup>
+
+  <!-- Find the "boost" directory in the parent directory. -->
+  <Choose>
+    <When Condition="'$(BoostDirectory)'==''">
+      <PropertyGroup>
+        <BoostDirectory>$(PlustacheDirectory)/../boost</BoostDirectory>
+      </PropertyGroup>
+    </When>
+  </Choose>
+
+  <!-- Find the directory structure created by "b2 install". -->
+  <Choose>
+    <When Condition="Exists('$(BoostDirectory)/include/boost-1_55')">
+      <PropertyGroup>
+        <BoostIncludeDirectory Condition="'$(BoostIncludeDirectory)'==''">$(BoostDirectory)/include/boost-1_55</BoostIncludeDirectory>
+        <BoostLibraryDirectory Condition="'$(BoostLibraryDirectory)'==''">$(BoostDirectory)/lib</BoostLibraryDirectory>
+      </PropertyGroup>
+    </When>
+  </Choose>
+</Project>
