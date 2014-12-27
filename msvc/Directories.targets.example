@@ -9,8 +9,8 @@ build. -->
 
 <Project xmlns="http://schemas.microsoft.com/developer/msbuild/2003">
   <PropertyGroup>
-    <!-- MSVC 11 (Visual Studio 2012) -->
-    <PlatformVersion>11</PlatformVersion>
+    <!-- MSVC 11 (Visual Studio 2013) -->
+    <PlatformVersion>12`</PlatformVersion>
 
     <!-- The Root directory contains this repo and the Boost C++ Libraries. -->
     <RootDirectory>$(MSBuildThisFileDirectory)/../..</RootDirectory>

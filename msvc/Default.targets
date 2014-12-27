@@ -8,7 +8,7 @@
     <SerialStreamDirectory Condition="'$(SerialStreamDirectory)'==''">$(MSBuildThisFileDirectory)..</SerialStreamDirectory>
     <SerialStreamIncludeDirectory Condition="'$(SerialStreamIncludeDirectory)'==''">$(SerialStreamDirectory)</SerialStreamIncludeDirectory>
 
-    <PlatformToolset Condition="'$(PlatformToolset)'==''">v110</PlatformToolset>
+    <PlatformToolset Condition="'$(PlatformToolset)'==''">v120</PlatformToolset>
   </PropertyGroup>
 
   <PropertyGroup Condition="'$(UseDebugLibraries)'==''">
